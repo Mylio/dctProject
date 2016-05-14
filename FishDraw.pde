@@ -15,12 +15,16 @@ class FishDraw {
   float ftint;
   float fisht;
   float randt;
+  boolean ga_sub;
+  int ga;
    
   FishDraw(float pos1, float pos2, float th1, float fcolor1, float ftint1) {
     tailPath = new float[4][len];
     pos = new float[3];
     phi0 = random(2*PI);
     th = th1;
+    ga = 0;
+    ga_sub = false;
     nth = th;
     for (int i = 1; i < len; i++) {
       tailPath[1][i] = (i-1)*dx*sin(th)+pos1;
@@ -86,7 +90,15 @@ class FishDraw {
       pEyeL[2][i] = -eyey*sin(th)+eyex*cos(-th)+sc*(cos(th+PI/2)*cos((i-1)*sceye)+ecc*sin((i-1)*sceye)*sin(th+PI/2));
     }
     pushMatrix();
-    translate(width/2+18*pos[1],height/2+18*pos[2]);
+    print();
+ //if (ga_sub == true){
+ //  float transX =500+ 18*pos[1];
+ //  float transY =500+ 18*pos[2];
+ //  translate( (transX+pos[1]) ,  (transY+pos[2]));
+ //}
+ //   else{
+      translate(width/2+18*pos[1],height/2+18*pos[2]);
+ //   }
     //translate(width/2,height/2);
     //scale(5);
     //fill(360);
@@ -147,7 +159,12 @@ class FishDraw {
       diffth = diffth-2*PI;
     }
     if (abs(diffth)>abs(dTh)){
-        th = th + sign(diffth)*dTh;
+        if (ga != 0){
+           th = th ;
+        }
+        else{
+          th = th + sign(diffth)*dTh;
+        }
     } else{
         th = th;
     }
@@ -161,34 +178,33 @@ class FishDraw {
       th = th+2*PI;
     }
      
-    pos[1] = pos[1]+dx*cos(th+PI/2);
-    pos[2] = pos[2]+dx*sin(th+PI/2);
-        //
-   //if(pos[1] > width){
-   //  pos[1] = 0;
-   //  println("Q"+pos[1]);
-   //}else if(pos[1] < 0){
-   // //  pos[1] = width;   
-   //   println("A"+pos[1]);
-   //} 
-   //if(pos[2] > height){
-   //  //pos[2] = 0;
-   //  println("22");
-   //}else if(pos[2] < 0){
-   //  // pos[2] = -15; (y don't change)
-   //   println("333" +(pos[1]+pos[2])+"pos1"+pos[1]);
-   //}
-    //
+    if (ga == 0){
+      pos[1] = pos[1]+dx*cos(th+PI/2);
+      pos[2] = pos[2]+dx*sin(th+PI/2);
+    }
+    else{
+      pos[1] = pos[1];
+      pos[2] = pos[2];
+    }
     float[][] newtailPath = new float[4][len];
     newtailPath[1][1] = pos[1];
     newtailPath[2][1] = pos[2];
     newtailPath[3][1] = th;
-    for (int i = 1; i < len-1; i++) {
-      newtailPath[1][i+1] = tailPath[1][i];
-      newtailPath[2][i+1] = tailPath[2][i];
-      newtailPath[3][i+1] = tailPath[3][i];
+    if (ga == 0){
+      for (int i = 1; i < len-1; i++) {
+       newtailPath[1][i+1] = tailPath[1][i];
+       newtailPath[2][i+1] = tailPath[2][i];
+       newtailPath[3][i+1] = tailPath[3][i];
+      }
+      tailPath = newtailPath;
     }
-    tailPath = newtailPath;
+    else{
+     for (int i = 1; i < len-1; i++) {
+      newtailPath[1][i] = tailPath[1][i];
+      newtailPath[2][i] = tailPath[2][i];
+      newtailPath[3][i] = tailPath[3][i];
+     }
+    }
   }
    
   void setth(float a) {

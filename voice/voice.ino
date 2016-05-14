@@ -6,7 +6,7 @@ void setup() {
    Serial.begin(57600);
 
   Voice.init();
-  Voice.addCommand("a ma kai men",0);
+  Voice.addCommand("qiao",0);
   Voice.addCommand("bu",1);
   Voice.start();
 }

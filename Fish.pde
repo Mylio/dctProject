@@ -14,14 +14,14 @@ int limit = 40;
     fY = y;
     rxMove = int(random(1));//return 0 or 1
     ryMove = int(random(1));
-    wlimit1 = width;
-    wlimit2 = 0;
+    hlimit1 = height;
+    hlimit2 = 0;
     if(stage == 1){
-      hlimit2 = height*2/3; hlimit1 = height;
+      wlimit2 = width*2/3; wlimit1 = width;
       }else if(stage == 2){
-      hlimit2 = height/3; hlimit1 = height*2/3;
+      wlimit2 = width/3; wlimit1 = width*2/3;
       }else if(stage == 3){
-      hlimit2 = 0; hlimit1 = height/3;println(hlimit1);println(height*2/3);}
+      wlimit2 = 0; wlimit1 = width/3;println(hlimit1);println(height*2/3);}
     //hlimit1 = height;
     //hlimit2 = 0;
     //loadImage
