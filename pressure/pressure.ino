@@ -3,6 +3,7 @@ VoiceRecognition Voice;
 int led_pin = 11;
 int fsr_pin1 = A0;
 int fsr_pin2 = A1;
+int fsr_pin_start = A3;
 int ris_pin1 = A3;
 int ris_pin2 = A5;
 int pr_min = 200;
@@ -21,6 +22,7 @@ void loop()
 { //stage1
   int fsr_value1 = analogRead(fsr_pin1); // 讀取FSR
   int fsr_value2 = analogRead(fsr_pin2);
+  int fsr_start = analogRead(fsr_pin_start);
   int led_value = map(fsr_value1, 0, 1023, 0, 255); // 從0~1023映射到0~255
  // analogWrite(led_pin, led_value); // 改變LED亮度
   //Serial.println(fsr_value1);
@@ -55,11 +57,11 @@ void loop()
    //   Serial.write(fsr_value2);
       Serial.println("A2");      
     }
-  if(ris_value1 > 400){
+  if(ris_value1 > 100){
     //  Serial.write(ris_value1);
       Serial.println("B1");      
     }
-  if(ris_value2 > 400){
+  if(ris_value2 > 100){
     //  Serial.println(ris_value2);
       Serial.println("B2");      
     }

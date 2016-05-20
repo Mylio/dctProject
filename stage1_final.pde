@@ -1,6 +1,9 @@
+import ddf.minim.*;//sound
 import processing.serial.*;
+Minim minim;//sound
 Serial stage;  // Create object from Serial class
 Serial stage3;//left 1411 for voice
+PImage startImg0;
 PImage startImg1; // start image for stage1
 PImage startImg2; // start image for stage2
 PImage startImg3; // start image for stage3
@@ -13,12 +16,14 @@ PGraphics pg2;
 PGraphics pg3;
 float []bgalpha;
 float initAlpha = 225;//set initial alpha
+AudioPlayer sound1n2;
+AudioPlayer sound3_s;
+AudioPlayer sound3_f;
 
 String stageValue;
 String stageValue2;
-//String seriValue;
-//String portName = Serial.list()[2];
-String portName2 = Serial.list()[1]; //test
+String portName = Serial.list()[2]; //***
+String portName2 = Serial.list()[1]; //***
 int serialNo = 115200;
 int serialNo2 = 57600;//for stage3
 //stage1 86 / Fish 21
@@ -67,7 +72,7 @@ float gY3 = 100;
 int status3;
 int fno3 [];
 int gaFishQuan3;
-final int gamePlay3=3,gameWin3=4,gameBreak3=5;//is it okay final sample.
+//final int gamePlay3=3,gameWin3=4,gameBreak3=5;//is it okay final sample.
 
 //FishDraw
 float t;
@@ -77,6 +82,8 @@ float numfish;
 int diedfish1;
 int[] diedfish = new int[6];
 int fishLimit;
+float speed;
+float portion;
 
 //Class
 Fish[] fish;
@@ -86,7 +93,11 @@ Fish[] fish2_2;
 Fish[] fish3;
 
 void setup(){
- // fullScreen();
+//music
+  minim = new Minim(this);
+  sound1n2 = minim.loadFile("round1n2.mp3");
+  sound3_s = minim.loadFile("round3_correct.mp3");
+  sound3_f = minim.loadFile("round3_wrong.mp3");
   size(1220,488);
 colorMode(HSB,360);//for FishDraw
 energy = 0;
@@ -114,6 +125,7 @@ fno2_2 = new int [10];
 fish3 = new Fish[fishQuan];
 fno3 = new int [10];
 //start image
+startImg0 = loadImage("start0.png");
 startImg1 = loadImage("start1.png");
 startImg2 = loadImage("start2.png");
 startImg3 = loadImage("start3.png");
@@ -130,44 +142,55 @@ for(int i=0;i<bgalpha.length;i++){bgalpha[i] = initAlpha;}
 //FishDraw
 stroke(0);
 smooth();
-numfish = 30;
+numfish = 50;
 t = 0;
 fishLimit=0;
+speed = 30;
+portion = 18/speed;
 //diedfish = 0;
 fishes = new ArrayList();
 for (int i = 1; i < numfish+1; i++) {
-   fishes.add(new FishDraw(-(width/2)/18-random(width)/18,-(height/2)/18+(floor(random(numfish))*(height/numfish))/18,(3*PI)/2,(6+floor(random(0,3))*20)/360.0,int(random(6) > 1)-random(0.1)));
+   fishes.add(new FishDraw(-(width/2)/speed-random(width)/speed,-(height/2)/speed+(floor(random(numfish))*(height/numfish))/speed,(3*PI)/2,(6+floor(random(0,3))*20)/360.0,int(random(6) > 1)-random(0.1)));
   }//end fishDraw
 
 makeFish();
-//stage = new Serial(this,portName,serialNo);
-//stage3 = new Serial(this,portName2,serialNo2);
+stage = new Serial(this,portName,serialNo); //***
+stage3 = new Serial(this,portName2,serialNo2);//***
 }
 void draw(){
 background(0);
-//checkEnergy();
+checkEnergy(); //***
 drawEnergy();
 statusCheck();
 drawStartImg();
 drawWinImg();
 //for image
-pg3.beginDraw();
+//pg3.beginDraw();
 //pg3.background(204,102,100,bgalpha[2]); //set bg color
-pg3.endDraw();
-image(pg3, 0, 0); 
-pg2.beginDraw();
-//pg2.background(204,102,100,bgalpha[1]);
-pg2.endDraw();
-image(pg2, width/3, 0); 
+//pg3.endDraw();
+//image(pg3, 0, 0); 
+//pg2.beginDraw();
+////pg2.background(204,102,100,bgalpha[1]);
+//pg2.endDraw();
+//image(pg2, width/3, 0); 
 pg1.beginDraw();
-//pg1.background(204,102,100,bgalpha[0]);
+pg1.background(0,0,0,bgalpha[0]);
 pg1.endDraw();
 image(pg1, width*2/3, 0); 
-//test
+//start0
+if(stageIng == 1){
+    tint(255,bgalpha[0]);
+    startImg0.resize(0, height);
+    image(startImg0,width*2/3-1,0);
+    noTint(); 
+}else{bgalpha[0]=0;}
+//for test ***
 drawGoal();
 }
 
 void reStart(){
+  delay(8000);
+  key='f';
   status = gamePlay;
   stageIng = 1;
   count1_1=false;
@@ -205,23 +228,23 @@ void drawStartImg(){
   if(stageIng == 2){
     tint(255,bgalpha[3]);
     image(river,0,0);
-    noTint(); 
+    image(river,width*2/3,0);
     image(pass1,width*2/3,0);
+    noTint();
    river.resize(0,height);
    pass1.resize(0,height);
   }
   if(stageIng == 3){
-  //  tint(255,bgalpha[3]);
+    tint(255,bgalpha[3]);
+    image(river,width/3,0);
+    image(river,width*2/3,0);
     image(pass1,width/3,0);
     image(pass2,width*2/3,0);
-  //  noTint(); 
+    noTint(); 
     pass1.resize(0, height);
     pass2.resize(0, height);
   }
   if(stageIng == 1){
-     //if(bgalpha[3]>10){
-     //for(int i=510;i<0;i--){bgalpha[3]-=0.5;}
-     //}
     tint(255,bgalpha[3]);
     startImg1.resize(0, height);
     image(startImg1,width*2/3-1,0);
@@ -243,6 +266,10 @@ void drawStartImg(){
 }
 void drawWinImg(){
   if(status==gameBreak){
+    image(river,0,0);    
+    image(river,width/3,0);
+    image(river,width/3,0);    
+    image(river,width*2/3,0);
     image(pass3,0,0);
     image(pass2,width/3,0);
     image(pass2,width*2/3,0);
@@ -252,7 +279,8 @@ void drawWinImg(){
 }
 void drawGoal(){
   ellipseMode(CENTER);
-  fill(100);
+  fill(0,255,0);
+  noStroke();
   ellipse(gX,gY,20,20);
   ellipse(gX1_2,gY1_2,20,20);
   ellipse(gX2,gY2,20,20);
@@ -278,117 +306,117 @@ void makeFish(){
     }
   
 }
-void drawFish(){
-   if(energy2 >= 45){
-    gatherFish(10,2);
-  }else if(energy2 >=40){
-    gatherFish(8,2);
-  }else if(energy2 >= 25){
-    gatherFish(4,2);
-  }
-  if(energy >= 45){
-    gatherFish(10,1);
-  }else if(energy >=40){
-    gatherFish(8,1);
-  }else if(energy >= 25){
-    gatherFish(4,1);
-  }
-    if(energy1_2 >= 45){
-    gatherFish(10,12);
-  }else if(energy1_2 >=40){
-    gatherFish(8,12);
-  }else if(energy1_2 >= 25){
-    gatherFish(4,12);
-  }
+//void drawFish(){
+//   if(energy2 >= 45){
+//    gatherFish(10,2);
+//  }else if(energy2 >=40){
+//    gatherFish(8,2);
+//  }else if(energy2 >= 25){
+//    gatherFish(4,2);
+//  }
+//  if(energy >= 45){
+//    gatherFish(10,1);
+//  }else if(energy >=40){
+//    gatherFish(8,1);
+//  }else if(energy >= 25){
+//    gatherFish(4,1);
+//  }
+//    if(energy1_2 >= 45){
+//    gatherFish(10,12);
+//  }else if(energy1_2 >=40){
+//    gatherFish(8,12);
+//  }else if(energy1_2 >= 25){
+//    gatherFish(4,12);
+//  }
   
    
-    if(energy2_2 >= 45){
-    gatherFish(10,22);
-  }else if(energy2_2 >=40){
-    gatherFish(8,22);
-  }else if(energy2_2 >= 25){
-    gatherFish(4,22);
-  }
+//    if(energy2_2 >= 45){
+//    gatherFish(10,22);
+//  }else if(energy2_2 >=40){
+//    gatherFish(8,22);
+//  }else if(energy2_2 >= 25){
+//    gatherFish(4,22);
+//  }
    
-    if(energy3 >= 45){
-    gatherFish(10,3);
-  }else if(energy3 >=40){
-    gatherFish(8,3);
-  }else if(energy3 >= 25){
-    gatherFish(4,3);
-  }
+//    if(energy3 >= 45){
+//    gatherFish(10,3);
+//  }else if(energy3 >=40){
+//    gatherFish(8,3);
+//  }else if(energy3 >= 25){
+//    gatherFish(4,3);
+//  }
   
   
-  for(int j=0;j<fish.length;j++){
-    fish[j].display();
-    fish2[j].display();
-    fish1_2[j].display();
-    fish2_2[j].display();
-    fish3[j].display();
-  }
+//  for(int j=0;j<fish.length;j++){
+//    fish[j].display();
+//    fish2[j].display();
+//    fish1_2[j].display();
+//    fish2_2[j].display();
+//    fish3[j].display();
+//  }
   
-  for(int k=0;k<fish.length;k++){
-    fish[k].move();
-    fish2[k].move();
-    fish1_2[k].move();
-    fish2_2[k].move();
-    fish3[k].move();
+//  for(int k=0;k<fish.length;k++){
+//    fish[k].move();
+//    fish2[k].move();
+//    fish1_2[k].move();
+//    fish2_2[k].move();
+//    fish3[k].move();
     
-      if(k<gaFishQuan){
-      fish[k].gather(gX,gY);
-      }
-      if(k<gaFishQuan1_2){
-      fish1_2[k].gather(gX1_2,gY1_2);
-      }
-      if(k<gaFishQuan2){
-      fish2[k].gather(gX2,gY2);
-      }
-      if(k<gaFishQuan2_2){
-      fish2_2[k].gather(gX2_2,gY2_2);
-      }
-      if(k<gaFishQuan3){
-      fish3[k].gather(gX3,gY3);
-      }
-  }
+//      if(k<gaFishQuan){
+//      fish[k].gather(gX,gY);
+//      }
+//      if(k<gaFishQuan1_2){
+//      fish1_2[k].gather(gX1_2,gY1_2);
+//      }
+//      if(k<gaFishQuan2){
+//      fish2[k].gather(gX2,gY2);
+//      }
+//      if(k<gaFishQuan2_2){
+//      fish2_2[k].gather(gX2_2,gY2_2);
+//      }
+//      if(k<gaFishQuan3){
+//      fish3[k].gather(gX3,gY3);
+//      }
+//  }
   
  
-}
-void gatherFish(int quan,int stage){//quan have to be less than fishQuan
-  //quan += gaFishQuan;
- // for(int m=gaFishQuan;m <quan;m++){
-    if(stage == 3){
-      for(int m=gaFishQuan;m <quan;m++){
-   //     fish3[m].gather(gX3,gY3);
-        gaFishQuan3 ++;
-    }}
-    if(stage == 2){
-      for(int m=gaFishQuan;m <quan;m++){
-   //     fish2[m].gather(gX2,gY2);
-    gaFishQuan2 ++;
-    println(gaFishQuan2);
-    }}
-    if(stage == 1){
-      for(int m=gaFishQuan;m <quan;m++){
-    //  fish[m].gather(gX,gY);
-      gaFishQuan ++;
-      println(gaFishQuan);
-      }
-    }
-    if(stage == 12){
-      for(int m=gaFishQuan;m <quan;m++){  
-     //   fish1_2[m].gather(gX1_2,gY1_2);
-        gaFishQuan1_2 ++;
-      }
-      }
+//}
+//void gatherFish(int quan,int stage){//quan have to be less than fishQuan
+//  //quan += gaFishQuan;
+// // for(int m=gaFishQuan;m <quan;m++){
+//    if(stage == 3){
+//      for(int m=gaFishQuan;m <quan;m++){
+//   //     fish3[m].gather(gX3,gY3);
+//        gaFishQuan3 ++;
+//    }}
+//    if(stage == 2){
+//      for(int m=gaFishQuan;m <quan;m++){
+//   //     fish2[m].gather(gX2,gY2);
+//    gaFishQuan2 ++;
+//    println(gaFishQuan2);
+//    }}
+//    if(stage == 1){
+//      for(int m=gaFishQuan;m <quan;m++){
+//    //  fish[m].gather(gX,gY);
+//      gaFishQuan ++;
+//      println(gaFishQuan);
+//      }
+//    }
+//    if(stage == 12){
+//      for(int m=gaFishQuan;m <quan;m++){  
+//     //   fish1_2[m].gather(gX1_2,gY1_2);
+//        gaFishQuan1_2 ++;
+//      }
+//      }
     
-    if(stage == 22){
-      for(int m=gaFishQuan;m <quan;m++){
-     //   fish2_2[m].gather(gX2_2,gY2_2);
-    gaFishQuan2_2 ++;
-    }}
+//    if(stage == 22){
+//      for(int m=gaFishQuan;m <quan;m++){
+//     //   fish2_2[m].gather(gX2_2,gY2_2);
+//    gaFishQuan2_2 ++;
+//    }}
     
- // }//m
-}
+// // }//m
+//}
 //FishDraw
 void drawFishes(){
      //fishDraw
@@ -408,28 +436,28 @@ void drawFishes(){
     }
     fish1.setfisht(fisht,randt);
     fish1.update();
-    if ((pos1[1] > ((width/2)+100)/18) || (pos1[2] > ((height/2)+100)/18) || (pos1[2] < -((height/2)+100)/18)){
+    if ((pos1[1] > ((width/2)+100)/speed) || (pos1[2] > ((height/2)+100)/speed) || (pos1[2] < -((height/2)+100)/speed)){
       fishes.remove(i);
-      fishes.add(new FishDraw(-(width/2)/18-random((3*width)/2)/18,-(height/2)/18+(floor(random(numfish))*(height/numfish))/18,(3*PI)/2,(6+floor(random(0,3))*20)/360.0,int(random(6) > 1)-random(0.1)));
+      fishes.add(new FishDraw(-(width/2)/speed-random((3*width)/2)/speed,-(height/2)/speed+(floor(random(numfish))*(height/numfish))/speed,(3*PI)/2,(6+floor(random(0,3))*20)/360.0,int(random(6) > 1)-random(0.1)));
     }
      //if ( key == 'r' ){
      // fish1.ga = 1;
      // print(pos1[1] , pos1[2]  , "\n");
     //}
     
-    if ( ( key == 'a') && (pos1[1] > 10)&& (pos1[1] <12) && (pos1[2] > -7.5) && (pos1[2] <  -4) ){
+    if ( ( key == 'a') && (pos1[1] > 13*portion)&& (pos1[1] <15*portion) && (pos1[2] > -8*portion) && (pos1[2] <  -4*portion) ){
       fish1.ga = 1;
     }
-    if ( ( key == 'b') && (pos1[1] > 17)&& (pos1[1] <19) && (pos1[2] > 4) && (pos1[2] < 8) ){
+    if ( ( key == 'b') && (pos1[1] > 18*portion)&& (pos1[1] <19*portion) && (pos1[2] > 5.5*portion) && (pos1[2] < 9*portion) ){
       fish1.ga = 2;
     }
-    if ( ( key == 'c') && (pos1[1] > -3)&& (pos1[1] <1) && (pos1[2] < 16) && (pos1[2] > 8) ){
+    if ( ( key == 'c') && (pos1[1] > -3*portion)&& (pos1[1] <1*portion) && (pos1[2] < 16*portion) && (pos1[2] > 8*portion) ){
       fish1.ga = 3;
     }
-    if ( ( key == 'd') && (pos1[1] > 4.5)&& (pos1[1] <6.5) && (pos1[2] < -3) && (pos1[2] > -7) ){
+    if ( ( key == 'd') && (pos1[1] > 4.5*portion)&& (pos1[1] <6.5*portion) && (pos1[2] < -3*portion) && (pos1[2] > -7*portion) ){
       fish1.ga = 4;
     }
-    if ( ( key == 'e') && (pos1[1] > -27) && (pos1[1] <-25)&& (pos1[2] > -9) && (pos1[2] < -7) ){
+    if ( ( key == 'e') && (pos1[1] > -27*portion) && (pos1[1] <-25*portion)&& (pos1[2] > -9*portion) && (pos1[2] < -7*portion) ){
       fish1.ga = 5;
     }
     if ( ( key == 'f') ){  
@@ -485,7 +513,9 @@ void statusCheck(){
       gameWin();
       break;
     case gameBreak:
-      gameBreak();
+      //gameBreak();
+      status = gamePlay;
+      reStart();
       break;
     default:
      // println( "aaa" );
@@ -496,12 +526,12 @@ void gameWin(){
   status = gameBreak;
   println("win");
 }
-void gameBreak(){
-  textSize(50);
-  textAlign(CENTER,CENTER);
-  fill(0,150,153,204);
-  text("Congrats!\nyou WIN",width/2,80);
-}
+//void gameBreak(){
+//  textSize(50);
+//  textAlign(CENTER,CENTER);
+//  fill(0,150,153,204);
+//  text("Congrats!\nyou WIN",width/2,80);
+//}
 void play(){
   if((energy >= energyLimit) && (diedfish[1]>fishLimit)){
         count1_1 = true;
@@ -543,10 +573,10 @@ void play(){
   if(count3_1){
     status = gameWin;
   }
-  //if(stageIng==1){
-  //  if(bgalpha[0]>5){bgalpha[0]--;}
+  if(stageIng==1){
+    if(bgalpha[0]>5){bgalpha[0]--;}
   //   if(bgalpha[3]>5){bgalpha[3]-=0.2;}
-  //}
+  }
   //if(stageIng==2){
   //  if(bgalpha[1]>5){bgalpha[1]--;}
   //  if(bgalpha[4]>5){bgalpha[4]-=0.2;}
@@ -572,21 +602,29 @@ void checkEnergy(){
      if(stageValue.trim().equals( "A1")  && stageIng==1){
        energy+=20;
        key = 'a';
+       sound1n2.rewind();
+       sound1n2.play();
        println("A1 get");
      }
      if(stageValue.trim().equals("A2") && stageIng==1){
        energy1_2 +=20;
        key = 'b';
+       sound1n2.rewind();
+       sound1n2.play();
        println("A2 get");
      }
      if(stageValue.trim().equals("B1") && stageIng==2){
        energy2 +=20;
        key = 'c';
+       sound1n2.rewind();
+       sound1n2.play();
        println("B1get");
      }
      if(stageValue.trim().equals("B2") && stageIng==2){
        energy2_2 +=20;
        key = 'd';
+       sound1n2.rewind();
+       sound1n2.play();
        println("B2get");
      }
   }else{
@@ -597,9 +635,14 @@ void checkEnergy(){
      if(stage3.available()>0){
      stageValue2 = stage3.readString();
      println(stageValue2);
-     if(stageValue2.trim().equals("C1") ){
+     if(stageValue2.trim().equals("C1") && (stageIng ==3) ){
        energy3 +=20;
        key = 'e';
+       sound3_s.rewind();
+       sound3_s.play();
+     }else if(stageValue2.trim().equals("CN") && (stageIng ==3) ){
+       sound3_f.rewind();
+       sound3_f.play();
      }
   }else{
    // println("No~~~");
@@ -613,19 +656,45 @@ void keyPressed() {
     if(key == 'L'){
       energy++;
     }else if(key == 'a'){
-      energy+=50;
+      energy+=50;  
+      sound1n2.rewind();
+      sound1n2.play();
     }else if(key == 'c'){
       energy2+=50;
+      sound1n2.rewind();
+      sound1n2.play();
     }else if(key == 'e'){
       energy3+=50;
+      sound3_s.rewind();
+      sound3_s.play();
     }else if(key == 'b'){
       energy1_2+=50;
+      sound1n2.rewind();
+      sound1n2.play();
       println(energy1_2);
     }else if(key == 'd'){
       energy2_2+=50;
+      sound1n2.rewind();
+      sound1n2.play();
     }
     if(key == ENTER){
       reStart();
+    }
+    //cheat key
+    if(key == 'A'){
+       count1_1 = true  ;  
+    }
+    if(key == 'B'){
+       count1_2 = true  ;
+    }
+    if(key == 'C'){
+       count2_1 = true  ; 
+    }
+    if(key == 'D'){
+       count2_2 = true  ;
+    }
+    if(key == 'E'){
+       count3_1 = true  ;
     }
   }else if(status == gameBreak){
     if(key == ENTER){

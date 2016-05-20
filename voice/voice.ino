@@ -6,8 +6,10 @@ void setup() {
    Serial.begin(57600);
 
   Voice.init();
-  Voice.addCommand("qiao",0);
-  Voice.addCommand("bu",1);
+  Voice.addCommand("shiao yu kai men",0);
+  Voice.addCommand("a ma kai men",2);
+  Voice.addCommand("gan",1);
+  
   Voice.start();
 }
 
@@ -20,6 +22,9 @@ void loop() {
       break;
    case 1:
       Serial.println("CN");
+      break; 
+   case 2:
+      Serial.println("a ma");
       break; 
    }
 }

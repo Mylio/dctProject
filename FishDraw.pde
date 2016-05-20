@@ -17,7 +17,7 @@ class FishDraw {
   float randt;
   boolean ga_sub;
   int ga;
-   
+  float speed;
   FishDraw(float pos1, float pos2, float th1, float fcolor1, float ftint1) {
     tailPath = new float[4][len];
     pos = new float[3];
@@ -26,6 +26,7 @@ class FishDraw {
     ga = 0;
     ga_sub = false;
     nth = th;
+    speed = 30;//***
     for (int i = 1; i < len; i++) {
       tailPath[1][i] = (i-1)*dx*sin(th)+pos1;
       tailPath[2][i] = (i-1)*dx*cos(th)+pos2;
@@ -97,7 +98,7 @@ class FishDraw {
  //  translate( (transX+pos[1]) ,  (transY+pos[2]));
  //}
  //   else{
-      translate(width/2+18*pos[1],height/2+18*pos[2]);
+      translate(width/2+speed*pos[1],height/2+speed*pos[2]);
  //   }
     //translate(width/2,height/2);
     //scale(5);
